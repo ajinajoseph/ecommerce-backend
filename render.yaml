@@ -2,7 +2,7 @@ services:
   - type: web_service
     name: ecommerce-backend
     env: python
-    pythonVersion: 3.12.18
+    pythonVersion: 3.12
     rootDirectory: .
     branch: main
     buildCommand: pip install -r requirements.txt
