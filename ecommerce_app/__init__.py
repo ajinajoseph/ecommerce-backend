@@ -54,4 +54,8 @@ def create_app(test_config=None):
             return send_file(BytesIO(data), mimetype=content_type, download_name=filename)
         return send_from_directory(app.config["THUMBNAIL_FOLDER"], filename)
     cors.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
     return app
