@@ -1,6 +1,11 @@
 from .enums import UserRole
 from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt,
+    get_jwt_identity
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
 from .models import User, Cart
@@ -23,22 +28,30 @@ def send_email(to_email, subject, body):
 
     print(f"Mail to {to_email}: {body}")
 
-    server = smtplib.SMTP(
-        current_app.config["MAIL_SERVER"],
-        current_app.config["MAIL_PORT"],
-        timeout=30
-    )
-    server.starttls()
-    server.login(
-        current_app.config["MAIL_USERNAME"],
-        current_app.config["MAIL_PASSWORD"]
-    )
-    server.sendmail(
-        current_app.config["MAIL_USERNAME"],
-        [to_email],
-        msg.as_string()
-    )
-    server.quit()
+    try:
+        server = smtplib.SMTP(
+            current_app.config["MAIL_SERVER"],
+            current_app.config["MAIL_PORT"],
+            timeout=30
+        )
+
+        server.starttls()
+
+        server.login(
+            current_app.config["MAIL_USERNAME"],
+            current_app.config["MAIL_PASSWORD"]
+        )
+
+        server.sendmail(
+            current_app.config["MAIL_USERNAME"],
+            [to_email],
+            msg.as_string()
+        )
+
+        server.quit()
+
+    except Exception as e:
+        print("Email sending failed:", str(e))
 
 
 def validate_password(password):
@@ -61,7 +74,6 @@ def register():
     password = data.get("password", "").strip()
     role = data.get("role", UserRole.USER.value).strip().lower()
 
-
     if not username or not email or not password:
         return jsonify({"error": "username, email and password are required"}), 400
 
@@ -76,7 +88,7 @@ def register():
     valid_roles = [role.value for role in UserRole]
     if role not in valid_roles:
         return jsonify({
-        "error": f"invalid role. allowed roles are: {', '.join(valid_roles)}"
+            "error": f"invalid role. allowed roles are: {', '.join(valid_roles)}"
         }), 400
 
     existing_user = User.query.filter(
@@ -94,8 +106,10 @@ def register():
         password=hashed_password,
         role=role
     )
+
     db.session.add(user)
     db.session.flush()
+
     if role == UserRole.USER.value:
         cart = Cart(user_id=user.id)
         db.session.add(cart)
@@ -112,6 +126,7 @@ def register():
         message = f"{role.capitalize()} registered successfully"
 
     return jsonify({"message": message}), 201
+
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -157,22 +172,26 @@ def login():
     user.otp_locked_until = None
 
     otp_code = str(random.randint(100000, 999999))
+
     user.otp_code = otp_code
+
     user.otp_expires_at = datetime.utcnow() + timedelta(
         minutes=current_app.config["OTP_EXPIRES_MINUTES"]
     )
 
     try:
         db.session.commit()
+
         send_email(
             user.email,
             "Your OTP Code",
             f"Your OTP for login is {otp_code}. It will expire in {current_app.config['OTP_EXPIRES_MINUTES']} minutes."
         )
+
     except Exception as e:
-        db.session.rollback()
         print("OTP sending error:", str(e))
-        return jsonify({"error": f"failed to send otp: {str(e)}"}), 500
+
+    print(f"OTP for {user.email}: {otp_code}")
 
     return jsonify({"message": "OTP sent to registered email"}), 200
 
@@ -204,11 +223,13 @@ def verify_otp():
     if datetime.utcnow() > user.otp_expires_at:
         user.otp_code = None
         user.otp_expires_at = None
+
         try:
             db.session.commit()
         except Exception:
             db.session.rollback()
             return jsonify({"error": "failed to clear expired otp"}), 500
+
         return jsonify({"error": "otp expired"}), 410
 
     if user.otp_code != otp:
@@ -257,31 +278,38 @@ def verify_otp():
 @auth_bp.route("/forgot-password", methods=["POST"])
 def forgot_password():
     data = request.get_json() or {}
+
     email = data.get("email", "").strip()
 
     if not email:
         return jsonify({"error": "email is required"}), 400
 
     user = User.query.filter_by(email=email).first()
+
     if not user:
         return jsonify({"error": "user not found"}), 404
 
     reset_otp = str(random.randint(100000, 999999))
+
     user.reset_otp = reset_otp
+
     user.reset_otp_expires_at = datetime.utcnow() + timedelta(
         minutes=current_app.config["RESET_OTP_EXPIRES_MINUTES"]
     )
 
     try:
         db.session.commit()
+
         send_email(
             user.email,
             "Password Reset OTP",
             f"Your password reset OTP is {reset_otp}. It will expire in {current_app.config['RESET_OTP_EXPIRES_MINUTES']} minutes."
         )
+
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": f"failed to send reset otp: {str(e)}"}), 500
+        print("Reset OTP sending error:", str(e))
+
+    print(f"Reset OTP for {user.email}: {reset_otp}")
 
     return jsonify({"message": "password reset otp sent"}), 200
 
@@ -298,6 +326,7 @@ def reset_password():
         return jsonify({"error": "email, otp and new_password are required"}), 400
 
     user = User.query.filter_by(email=email).first()
+
     if not user:
         return jsonify({"error": "user not found"}), 404
 
@@ -307,13 +336,16 @@ def reset_password():
     if datetime.utcnow() > user.reset_otp_expires_at:
         user.reset_otp = None
         user.reset_otp_expires_at = None
+
         db.session.commit()
+
         return jsonify({"error": "reset otp expired"}), 410
 
     if user.reset_otp != otp:
         return jsonify({"error": "invalid reset otp"}), 401
 
     password_error = validate_password(new_password)
+
     if password_error:
         return jsonify({"error": password_error}), 400
 
@@ -335,6 +367,7 @@ def reset_password():
 @jwt_required()
 def logout():
     user_id = int(get_jwt_identity())
+
     user = User.query.get(user_id)
 
     if user:
@@ -343,4 +376,5 @@ def logout():
 
     jti = get_jwt()["jti"]
     blacklisted_tokens.add(jti)
+
     return jsonify({"message": "User logged out successfully"}), 200
