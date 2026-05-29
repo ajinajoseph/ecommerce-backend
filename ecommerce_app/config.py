@@ -38,7 +38,6 @@ class Config:
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_REGION = os.getenv("AWS_REGION")
     AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
-    # Optional CloudFront or custom domain for object URLs, e.g. https://d111111abcdef8.cloudfront.net
     AWS_S3_PUBLIC_BASE_URL = os.getenv("AWS_S3_PUBLIC_BASE_URL", "").rstrip("/")
 
     if not USE_S3:

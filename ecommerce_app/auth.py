@@ -19,7 +19,6 @@ from email.mime.text import MIMEText
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
     msg["Subject"] = subject
@@ -29,30 +28,36 @@ def send_email(to_email, subject, body):
     print(f"Mail to {to_email}: {body}")
 
     try:
+        print("Connecting to SMTP server...")
+
         server = smtplib.SMTP(
             current_app.config["MAIL_SERVER"],
             current_app.config["MAIL_PORT"],
-            timeout=30
+            timeout=5
         )
 
+        print("Starting TLS...")
         server.starttls()
 
+        print("Logging in...")
         server.login(
             current_app.config["MAIL_USERNAME"],
             current_app.config["MAIL_PASSWORD"]
         )
 
+        print("Sending mail...")
         server.sendmail(
             current_app.config["MAIL_USERNAME"],
             [to_email],
             msg.as_string()
         )
 
+        print("Mail sent successfully")
+
         server.quit()
 
     except Exception as e:
         print("Email sending failed:", str(e))
-
 
 def validate_password(password):
     if len(password) < 6:
@@ -178,22 +183,27 @@ def login():
     user.otp_expires_at = datetime.utcnow() + timedelta(
         minutes=current_app.config["OTP_EXPIRES_MINUTES"]
     )
-
     try:
         db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({"error": "failed to generate otp"}), 500
 
+    try:
         send_email(
             user.email,
             "Your OTP Code",
             f"Your OTP for login is {otp_code}. It will expire in {current_app.config['OTP_EXPIRES_MINUTES']} minutes."
         )
-
     except Exception as e:
         print("OTP sending error:", str(e))
 
     print(f"OTP for {user.email}: {otp_code}")
 
-    return jsonify({"message": "OTP sent to registered email"}), 200
+    return jsonify({
+        "message": "OTP generated successfully",
+        "otp_for_testing": otp_code
+    }), 200
 
 
 @auth_bp.route("/verify-otp", methods=["POST"])
