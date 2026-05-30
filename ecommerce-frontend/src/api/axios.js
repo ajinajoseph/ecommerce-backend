@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAuthBaseUrl, refreshAccessToken } from "../auth/authService";
+import { refreshAccessToken } from "../auth/authService";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5000";
 
@@ -79,17 +79,9 @@ api.interceptors.response.use(
     }
 
     try {
-      const refreshResponse = await axios.post(
-        `${API_BASE_URL}/auth/refresh`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${storedRefreshToken}`,
-          },
-        }
-      );
+      const data = await refreshAccessToken(storedRefreshToken);
 
-      const newAccessToken = refreshResponse.data.access_token;
+      const newAccessToken = data.access_token;
       localStorage.setItem("access_token", newAccessToken);
       api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
