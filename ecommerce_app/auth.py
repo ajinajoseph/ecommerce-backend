@@ -2,6 +2,7 @@ from .enums import UserRole
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import (
     create_access_token,
+    create_refresh_token,
     jwt_required,
     get_jwt,
     get_jwt_identity
@@ -273,16 +274,43 @@ def verify_otp():
         db.session.rollback()
         return jsonify({"error": "failed to verify otp"}), 500
 
-    token = create_access_token(
+    access_token = create_access_token(
+        identity=str(user.id),
+        additional_claims={"session_token": session_token}
+    )
+    refresh_token = create_refresh_token(
         identity=str(user.id),
         additional_claims={"session_token": session_token}
     )
 
     return jsonify({
         "message": "login successful",
-        "access_token": token,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "role": user.role
     }), 200
+
+
+@auth_bp.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "user not found"}), 404
+
+    jwt_data = get_jwt()
+    token_session = jwt_data.get("session_token")
+    if not token_session or user.active_session_token != token_session:
+        return jsonify({"error": "session expired due to login from another device"}), 401
+
+    new_access_token = create_access_token(
+        identity=str(user.id),
+        additional_claims={"session_token": user.active_session_token}
+    )
+
+    return jsonify({"access_token": new_access_token}), 200
 
 
 @auth_bp.route("/forgot-password", methods=["POST"])
