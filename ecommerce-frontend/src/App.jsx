@@ -11,6 +11,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+
           <Route
             path="/"
             element={
@@ -19,6 +20,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/dashboard"
             element={
@@ -27,6 +29,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

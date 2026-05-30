@@ -10,13 +10,19 @@ const ROLE_KEY = "role";
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
+
   const [accessToken, setAccessToken] = useState(
     () => localStorage.getItem(ACCESS_TOKEN_KEY) || ""
   );
+
   const [refreshToken, setRefreshToken] = useState(
     () => localStorage.getItem(REFRESH_TOKEN_KEY) || ""
   );
-  const [role, setRole] = useState(() => localStorage.getItem(ROLE_KEY) || "");
+
+  const [role, setRole] = useState(
+    () => localStorage.getItem(ROLE_KEY) || ""
+  );
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,19 +35,30 @@ export function AuthProvider({ children }) {
       navigate("/login", { replace: true });
     }
 
-    window.addEventListener("auth-session-cleared", handleSessionCleared);
-    return () => window.removeEventListener("auth-session-cleared", handleSessionCleared);
+    window.addEventListener(
+      "auth-session-cleared",
+      handleSessionCleared
+    );
+
+    return () =>
+      window.removeEventListener(
+        "auth-session-cleared",
+        handleSessionCleared
+      );
   }, [navigate]);
 
-  const login = useCallback(({ access_token, refresh_token, role: userRole }) => {
-    localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
-    localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
-    localStorage.setItem(ROLE_KEY, userRole || "");
+  const login = useCallback(
+    ({ access_token, refresh_token, role: userRole }) => {
+      localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
+      localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
+      localStorage.setItem(ROLE_KEY, userRole || "");
 
-    setAccessToken(access_token);
-    setRefreshToken(refresh_token);
-    setRole(userRole || "");
-  }, []);
+      setAccessToken(access_token);
+      setRefreshToken(refresh_token);
+      setRole(userRole || "");
+    },
+    []
+  );
 
   const setAccessTokenValue = useCallback((token) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, token);
@@ -54,7 +71,7 @@ export function AuthProvider({ children }) {
         await logoutRequest();
       }
     } catch {
-      // Clear local session even if the server request fails.
+      // ignore
     } finally {
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -63,6 +80,7 @@ export function AuthProvider({ children }) {
       setAccessToken("");
       setRefreshToken("");
       setRole("");
+
       navigate("/login", { replace: true });
     }
   }, [accessToken, navigate]);
@@ -78,16 +96,32 @@ export function AuthProvider({ children }) {
       logout,
       setAccessToken: setAccessTokenValue,
     }),
-    [accessToken, refreshToken, role, loading, login, logout, setAccessTokenValue]
+    [
+      accessToken,
+      refreshToken,
+      role,
+      loading,
+      login,
+      logout,
+      setAccessTokenValue,
+    ]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error(
+      "useAuth must be used within an AuthProvider"
+    );
   }
+
   return context;
 }

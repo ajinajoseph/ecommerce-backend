@@ -290,7 +290,6 @@ def verify_otp():
         "role": user.role
     }), 200
 
-
 @auth_bp.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
@@ -302,16 +301,22 @@ def refresh():
 
     jwt_data = get_jwt()
     token_session = jwt_data.get("session_token")
+
     if not token_session or user.active_session_token != token_session:
-        return jsonify({"error": "session expired due to login from another device"}), 401
+        return jsonify({
+            "error": "session expired due to login from another device"
+        }), 401
 
     new_access_token = create_access_token(
         identity=str(user.id),
-        additional_claims={"session_token": user.active_session_token}
+        additional_claims={
+            "session_token": user.active_session_token
+        }
     )
 
-    return jsonify({"access_token": new_access_token}), 200
-
+    return jsonify({
+        "access_token": new_access_token
+    }), 200
 
 @auth_bp.route("/forgot-password", methods=["POST"])
 def forgot_password():

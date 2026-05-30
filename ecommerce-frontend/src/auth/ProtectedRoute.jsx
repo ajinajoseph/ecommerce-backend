@@ -7,7 +7,7 @@ function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div className="status-message loading-state">
-        <p>Checking session…</p>
+        <p>Checking session...</p>
       </div>
     );
   }
