@@ -35,16 +35,10 @@ export function AuthProvider({ children }) {
       navigate("/login", { replace: true });
     }
 
-    window.addEventListener(
-      "auth-session-cleared",
-      handleSessionCleared
-    );
+    window.addEventListener("auth-session-cleared", handleSessionCleared);
 
     return () =>
-      window.removeEventListener(
-        "auth-session-cleared",
-        handleSessionCleared
-      );
+      window.removeEventListener("auth-session-cleared", handleSessionCleared);
   }, [navigate]);
 
   const login = useCallback(
@@ -108,9 +102,7 @@ export function AuthProvider({ children }) {
   );
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
   );
 }
 
@@ -118,10 +110,10 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error(
-      "useAuth must be used within an AuthProvider"
-    );
+    throw new Error("useAuth must be used within an AuthProvider");
   }
 
   return context;
 }
+
+export { AuthContext };

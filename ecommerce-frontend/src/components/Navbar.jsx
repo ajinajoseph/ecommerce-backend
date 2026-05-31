@@ -16,11 +16,11 @@ function Navbar() {
       </div>
 
       <div className="navbar-links">
-        <Link to="/">Products</Link>
-
         {isAuthenticated && (
           <>
             <Link to="/dashboard">Dashboard</Link>
+
+            <Link to="/">Products</Link>
 
             <button
               type="button"

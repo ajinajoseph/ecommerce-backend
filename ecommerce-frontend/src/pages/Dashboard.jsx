@@ -13,8 +13,6 @@ function Dashboard() {
         <div className="hero-copy">
           <span className="eyebrow">Account</span>
 
-          <h1>Dashboard</h1>
-
           <p className="hero-text">
             You are signed in as <strong>{role || "user"}</strong>.
           </p>
