@@ -36,7 +36,7 @@ function Home() {
     try {
       setLoading(true);
 
-      const response = await api.get("/api/products", {
+      const response = await api.get("/products", {
         params: {
           search: search,
           category_id: selectedCategory,
@@ -59,7 +59,7 @@ function Home() {
 
   async function fetchCategories() {
     try {
-      const response = await api.get("/api/categories");
+      const response = await api.get("/categories");
       setCategories(response.data);
     } catch (err) {
       console.log(err);
