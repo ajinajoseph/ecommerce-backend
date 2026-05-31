@@ -18,7 +18,7 @@ import re
 import secrets
 from email.mime.text import MIMEText
 
-auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+auth_bp = Blueprint("auth", __name__)
 
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
