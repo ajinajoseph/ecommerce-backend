@@ -17,12 +17,15 @@ def create_app(test_config=None):
     jwt.init_app(app)
 
     CORS(app, resources={
-        r"/api/*": {
-            "origins": "https://ecommerce-frontend-rym2.onrender.com",
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
-        }
-    })
+    r"/api/*": {
+        "origins": [
+            "http://localhost:5173",
+            "https://ecommerce-frontend-rym2.onrender.com"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
     
     @jwt.token_in_blocklist_loader
