@@ -1,11 +1,14 @@
 function ProductCard({ product }) {
   const thumbnailUrl = product.images?.[0]?.thumbnail_url;
-  const imageUrl = thumbnailUrl
-    ? thumbnailUrl.startsWith("http")
-      ? thumbnailUrl
-      : `http://127.0.0.1:5000${thumbnailUrl}`
-    : "/placeholder.png";
+  const BACKEND_URL =
+  import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ||
+  "http://127.0.0.1:5000";
 
+  const imageUrl = thumbnailUrl
+  ? thumbnailUrl.startsWith("http")
+    ? thumbnailUrl
+    : `${BACKEND_URL}${thumbnailUrl}`
+  : "/placeholder.png";
   return (
     <article className="card">
       <div className="card-image">

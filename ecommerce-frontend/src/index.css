@@ -415,7 +415,8 @@ body {
 .card-content h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: var(--text-h);
+  color: #1e293b;
+  font-weight: 700;
 }
 
 .card-content p {
