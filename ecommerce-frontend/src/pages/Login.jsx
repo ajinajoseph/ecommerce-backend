@@ -65,6 +65,8 @@ function Login() {
         access_token: data.access_token,
         refresh_token: data.refresh_token,
         role: data.role,
+        username,
+        email: data.email,
       });
 
       navigate("/dashboard", { replace: true });
