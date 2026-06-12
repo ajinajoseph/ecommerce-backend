@@ -48,13 +48,17 @@ def product_to_dict(product):
 
 
 def cart_item_to_dict(item):
+    thumbnail_url = None
+    if item.product and item.product.images:
+        thumbnail_url = _product_image_urls(item.product.images[0])["thumbnail_url"]
     return {
         "id": item.id,
         "product_id": item.product_id,
         "product_name": item.product.name if item.product else None,
         "price": item.product.price if item.product else None,
         "quantity": item.quantity,
-        "line_total": (item.product.price * item.quantity) if item.product else 0
+        "line_total": (item.product.price * item.quantity) if item.product else 0,
+        "thumbnail_url": thumbnail_url
     }
 
 

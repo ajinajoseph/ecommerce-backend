@@ -1,9 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import AdminRoute from "./auth/AdminRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -22,11 +24,20 @@ function App() {
           />
 
           <Route
-            path="/dashboard"
+            path="/cart"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Cart />
               </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <AdminRoute>
+                <Dashboard />
+              </AdminRoute>
             }
           />
 

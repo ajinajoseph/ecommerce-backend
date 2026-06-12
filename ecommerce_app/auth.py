@@ -287,9 +287,7 @@ def verify_otp():
         "message": "login successful",
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "role": user.role,
-        "username": user.username,
-        "email": user.email
+        "role": user.role
     }), 200
 
 @auth_bp.route("/refresh", methods=["POST"])

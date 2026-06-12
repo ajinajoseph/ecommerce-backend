@@ -7,8 +7,6 @@ const AuthContext = createContext(null);
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 const ROLE_KEY = "role";
-const USERNAME_KEY = "username";
-const EMAIL_KEY = "email";
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
@@ -25,14 +23,6 @@ export function AuthProvider({ children }) {
     () => localStorage.getItem(ROLE_KEY) || ""
   );
 
-  const [username, setUsername] = useState(
-    () => localStorage.getItem(USERNAME_KEY) || ""
-  );
-
-  const [email, setEmail] = useState(
-    () => localStorage.getItem(EMAIL_KEY) || ""
-  );
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,8 +32,6 @@ export function AuthProvider({ children }) {
       setAccessToken("");
       setRefreshToken("");
       setRole("");
-      setUsername("");
-      setEmail("");
       navigate("/login", { replace: true });
     }
 
@@ -54,18 +42,14 @@ export function AuthProvider({ children }) {
   }, [navigate]);
 
   const login = useCallback(
-    ({ access_token, refresh_token, role: userRole, username, email }) => {
+    ({ access_token, refresh_token, role: userRole }) => {
       localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
       localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
       localStorage.setItem(ROLE_KEY, userRole || "");
-      localStorage.setItem(USERNAME_KEY, username || "");
-      localStorage.setItem(EMAIL_KEY, email || "");
 
       setAccessToken(access_token);
       setRefreshToken(refresh_token);
       setRole(userRole || "");
-      setUsername(username || "");
-      setEmail(email || "");
     },
     []
   );
@@ -86,14 +70,10 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(ROLE_KEY);
-      localStorage.removeItem(USERNAME_KEY);
-      localStorage.removeItem(EMAIL_KEY);
 
       setAccessToken("");
       setRefreshToken("");
       setRole("");
-      setUsername("");
-      setEmail("");
 
       navigate("/login", { replace: true });
     }
@@ -104,8 +84,6 @@ export function AuthProvider({ children }) {
       accessToken,
       refreshToken,
       role,
-      username,
-      email,
       loading,
       isAuthenticated: Boolean(accessToken),
       login,
@@ -116,8 +94,6 @@ export function AuthProvider({ children }) {
       accessToken,
       refreshToken,
       role,
-      username,
-      email,
       loading,
       login,
       logout,

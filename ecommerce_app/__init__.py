@@ -20,7 +20,11 @@ def create_app(test_config=None):
     r"/api/*": {
         "origins": [
             "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:5175",
             "http://127.0.0.1:5173",
+            "http://127.0.0.1:5174",
+            "http://127.0.0.1:5175",
             "https://ecommerce-frontend-rym2.onrender.com"
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
