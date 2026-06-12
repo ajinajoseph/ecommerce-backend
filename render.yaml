@@ -1,0 +1,19 @@
+services:
+  - type: web_service
+    name: ecommerce-backend
+    env: python
+    pythonVersion: 3.12
+    rootDirectory: .
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+
+  - type: static_site
+    name: ecommerce-frontend
+    rootDirectory: ecommerce-frontend
+    branch: main
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://ecommerce-backend-2-3bla.onrender.com/api
