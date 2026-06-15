@@ -33,6 +33,25 @@ export async function logoutRequest() {
   return response.data;
 }
 
+export async function fetchCurrentUser() {
+  const response = await api.get("/auth/me");
+  return response.data;
+}
+
+export async function forgotPasswordRequest(email) {
+  const response = await api.post("/auth/forgot-password", { email });
+  return response.data;
+}
+
+export async function resetPasswordRequest(email, otp, new_password) {
+  const response = await api.post("/auth/reset-password", {
+    email,
+    otp,
+    new_password,
+  });
+  return response.data;
+}
+
 export async function refreshAccessToken(refreshToken) {
   const response = await api.post(
     "/auth/refresh",

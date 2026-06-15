@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logoutRequest } from "./authService";
+import { fetchCurrentUser, logoutRequest } from "./authService";
 
 const AuthContext = createContext(null);
 
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 const ROLE_KEY = "role";
+const USERNAME_KEY = "username";
+const EMAIL_KEY = "email";
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
@@ -23,7 +25,32 @@ export function AuthProvider({ children }) {
     () => localStorage.getItem(ROLE_KEY) || ""
   );
 
+  const [username, setUsername] = useState(
+    () => localStorage.getItem(USERNAME_KEY) || ""
+  );
+
+  const [email, setEmail] = useState(
+    () => localStorage.getItem(EMAIL_KEY) || ""
+  );
+
   const [loading, setLoading] = useState(true);
+
+  const clearUserProfile = useCallback(() => {
+    localStorage.removeItem(USERNAME_KEY);
+    localStorage.removeItem(EMAIL_KEY);
+    setUsername("");
+    setEmail("");
+  }, []);
+
+  const setUserProfile = useCallback(({ username: nextUsername, email: nextEmail }) => {
+    const storedUsername = nextUsername || "";
+    const storedEmail = nextEmail || "";
+
+    localStorage.setItem(USERNAME_KEY, storedUsername);
+    localStorage.setItem(EMAIL_KEY, storedEmail);
+    setUsername(storedUsername);
+    setEmail(storedEmail);
+  }, []);
 
   useEffect(() => {
     setLoading(false);
@@ -32,6 +59,7 @@ export function AuthProvider({ children }) {
       setAccessToken("");
       setRefreshToken("");
       setRole("");
+      clearUserProfile();
       navigate("/login", { replace: true });
     }
 
@@ -39,10 +67,35 @@ export function AuthProvider({ children }) {
 
     return () =>
       window.removeEventListener("auth-session-cleared", handleSessionCleared);
-  }, [navigate]);
+  }, [navigate, clearUserProfile]);
+
+  useEffect(() => {
+    if (!accessToken || (username && email)) {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchCurrentUser()
+      .then((data) => {
+        if (!cancelled) {
+          setUserProfile({
+            username: data.username,
+            email: data.email,
+          });
+        }
+      })
+      .catch(() => {
+        // ignore profile fetch errors
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, username, email, setUserProfile]);
 
   const login = useCallback(
-    ({ access_token, refresh_token, role: userRole }) => {
+    ({ access_token, refresh_token, role: userRole, username: userName, email: userEmail }) => {
       localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
       localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
       localStorage.setItem(ROLE_KEY, userRole || "");
@@ -50,8 +103,12 @@ export function AuthProvider({ children }) {
       setAccessToken(access_token);
       setRefreshToken(refresh_token);
       setRole(userRole || "");
+      setUserProfile({
+        username: userName,
+        email: userEmail,
+      });
     },
-    []
+    [setUserProfile]
   );
 
   const setAccessTokenValue = useCallback((token) => {
@@ -70,6 +127,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(ROLE_KEY);
+      clearUserProfile();
 
       setAccessToken("");
       setRefreshToken("");
@@ -77,13 +135,15 @@ export function AuthProvider({ children }) {
 
       navigate("/login", { replace: true });
     }
-  }, [accessToken, navigate]);
+  }, [accessToken, navigate, clearUserProfile]);
 
   const value = useMemo(
     () => ({
       accessToken,
       refreshToken,
       role,
+      username,
+      email,
       loading,
       isAuthenticated: Boolean(accessToken),
       login,
@@ -94,6 +154,8 @@ export function AuthProvider({ children }) {
       accessToken,
       refreshToken,
       role,
+      username,
+      email,
       loading,
       login,
       logout,

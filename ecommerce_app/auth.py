@@ -287,7 +287,32 @@ def verify_otp():
         "message": "login successful",
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "role": user.role
+        "role": user.role,
+        "username": user.username,
+        "email": user.email,
+    }), 200
+
+@auth_bp.route("/me", methods=["GET"])
+@jwt_required()
+def get_current_user():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "user not found"}), 404
+
+    jwt_data = get_jwt()
+    token_session = jwt_data.get("session_token")
+
+    if not token_session or user.active_session_token != token_session:
+        return jsonify({
+            "error": "session expired due to login from another device"
+        }), 401
+
+    return jsonify({
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
     }), 200
 
 @auth_bp.route("/refresh", methods=["POST"])
