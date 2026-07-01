@@ -1,17 +1,15 @@
 import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
 import { useAuth } from "../auth/AuthContext";
+import { getPrimaryImage, resolveImageUrl } from "../utils/image";
 
 function ProductCard({ product }) {
   const dispatch = useDispatch();
   const { role } = useAuth();
 
-  const thumbnailUrl = product.images?.[0]?.thumbnail_url;
-  const imageUrl = thumbnailUrl
-    ? thumbnailUrl.startsWith("http")
-      ? thumbnailUrl
-      : `http://127.0.0.1:5000${thumbnailUrl}`
-    : "/placeholder.png";
+  const primaryImage = getPrimaryImage(product);
+  const imageUrl = resolveImageUrl(primaryImage) || "/placeholder.png";
 
   const handleAddToCart = async () => {
     try {
@@ -28,12 +26,14 @@ function ProductCard({ product }) {
 
   return (
     <article className="card">
-      <div className="card-image">
-        <img
-          src={imageUrl}
-          alt={product.name}
-        />
-      </div>
+      <Link to={`/products/${product.id}`} className="card-image-link">
+        <div className="card-image">
+          <img
+            src={imageUrl}
+            alt={product.name}
+          />
+        </div>
+      </Link>
 
       <div className="card-content">
         <h2>{product.name}</h2>

@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Cart from "./pages/Cart";
+import ProductDetail from "./pages/ProductDetail";
 
 function App() {
   return (
@@ -28,6 +29,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Cart />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/products/:productId"
+            element={
+              <ProtectedRoute>
+                <ProductDetail />
               </ProtectedRoute>
             }
           />
